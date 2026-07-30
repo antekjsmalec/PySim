@@ -30,6 +30,9 @@ class Button:
 playPause = Button(10, 10, 25, 25, 'red')
 
 class Block:
+
+    allBlocks = []
+
     def __init__(self, posX, posY, height, width, startAngle):
         self.posX = posX
         self.posY = posY
@@ -46,6 +49,15 @@ class Block:
         self.baseAngC = math.radians(225)
         self.baseAngD = math.radians(135)
 
+        self.pointA = 0,0
+        self.pointB = 0,0
+        self.pointC = 0,0
+        self.pointD = 0,0
+        
+
+        Block.allBlocks.append(self)
+
+
     def update_points(self):
         radAngle = math.radians(self.angle)
         
@@ -58,6 +70,9 @@ class Block:
         self.pointB = (self.posX + self.r * math.cos(angB), self.posY + self.r * math.sin(angB))
         self.pointC = (self.posX + self.r * math.cos(angC), self.posY + self.r * math.sin(angC))
         self.pointD = (self.posX + self.r * math.cos(angD), self.posY + self.r * math.sin(angD))
+
+    def __repr__(self):
+        return f"Block({self.pointA}, {self.pointB}, {self.pointC}, {self.pointD})"
 
     def update_gravity(self):
         self.v = self.v + g
@@ -77,6 +92,7 @@ square = Block(250, 250, size, size, 0)
 floor = Block(200, 950, 150, 150, 0)
 
 rotationSpeed = 90
+
 
 while run:
     for event in pygame.event.get():
@@ -99,6 +115,7 @@ while run:
     square.update_points()
     square.draw()
     square.rotate(rotationSpeed*dt)
+    print(f"Point A:{Block.allBlocks[0].pointA}| Point B: {Block.allBlocks[0].pointB}| Point C:{Block.allBlocks[0].pointC}| Point D: {Block.allBlocks[0].pointD}")
 
     floor.update_points()
     floor.draw()
