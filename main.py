@@ -63,26 +63,38 @@ class Particle:
         self.a = Vector(0,0)
         self.radius = radius
         self.mass = mass
+        self.inv_mass = 1 / mass if mass > 0 else 0.0
         self.bounce = bounce
 
     def force(self, force:Vector):
-        self.a += force * (1.0 / self.mass)
+        self.a += force * self.inv_mass
 
     def update(self, dt = float, floor = float):
         self.v += self.a * dt
         self.position += self.v * dt
         self.a = Vector(0,0)
 
-        if self.position.y + self.radius >= floor:
-            self.position.y = floor - self.radius
-            self.v = -self.v * self.bounce
-
+        if self.position.x - self.radius <= 0:
+            self.position.x = self.radius
+            self.v.x = -self.v.x * self.bounce
+        elif self.position.x + self.radius >= 1920:
+            self.position.x = 1920 - self.radius
+            self.v.x = -self.v.x * self.bounce
+        if self.position.y - self.radius <=0:
+            self.position.y = self.radius
+            self.v.y = -self.v.y * self.bounce
+        elif self.position.y + self.radius >= floor__height:
+            self.position.y = floor__height - self.radius
+            self.v.y = -self.v.y * self.bounce
 
 mousePositionX, mousePositionY = pygame.mouse.get_pos()
 
 g = Vector(0, 981.0)
 floor__height = 1030
 particle = Particle(600, 50, 10,1, 0.8)
+a_force = Vector(-1000, 0)
+d_force = Vector(1000, 0)
+w_force = Vector(0, -670)
 
 play_pause = Button(10, 10, 25, 25, 'red')
 
@@ -93,6 +105,8 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+
+    keys = pygame.key.get_pressed()
     dt = clock.tick(60) / 1000
     screen.fill((40, 40, 40))
     mousePositionX, mousePositionY = pygame.mouse.get_pos()
@@ -110,6 +124,14 @@ while run:
     if physics_on == True:
         particle.force(g)
         particle.update(dt, floor__height)
+
+    if keys[pygame.K_a]:
+        particle.force(a_force)
+    elif keys[pygame.K_d]:
+        particle.force(d_force)
+    elif keys[pygame.K_w]:
+        particle.force(w_force)
+
 
     pygame.draw.circle(screen, 'red', (int(particle.position.x), int(particle.position.y)), particle.radius)
     pygame.draw.line(screen, 'white', (0, floor__height), (1920, floor__height), width=1)
