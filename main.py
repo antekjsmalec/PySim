@@ -173,7 +173,11 @@ while run:
                 elif play_pause.colour == 'green':
                     play_pause.colour = 'red'
                     physics_on = False
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            elif event.key == pygame.K_r:
+                play_pause.colour = 'red'
+                physics_on = False
+                circles.clear()
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
             mx, my = pygame.mouse.get_pos()
             r = random.randint(15, 35)
             colour = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
@@ -183,12 +187,11 @@ while run:
                     r = 60
                     colour = 'black'
                     circles.append(Particle(mx, my, r, 3000, colour = colour))
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     mx, my = pygame.mouse.get_pos()
                     r = 35
                     colour = 'red'
-                    for i in range(10):
-                        circles.append(Particle(mx, my, r, 5 , colour = colour))
+                    circles.append(Particle(mx, my, r, 5 , colour = colour))
 
 
     keys = pygame.key.get_pressed()
