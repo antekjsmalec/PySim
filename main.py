@@ -1,7 +1,7 @@
 import sys
 import math
 import pygame
-
+import random
 
 pygame.init()
 screen = pygame.display.set_mode((1920, 1080))
@@ -55,9 +55,15 @@ class Vector:
     def magnitude(self):
         return math.sqrt(self.x**2 + self.y**2)
 
+    def normalize(self):
+        mag = self.magnitude()
+        if mag == 0:
+            return Vector(0, 0)
+        return Vector(self.x / mag, self.y / mag)
+
 class Particle:
 
-    def __init__(self, x,y, radius=10, mass=1.0, bounce = 0.8):
+    def __init__(self, x,y, radius=10, mass=1.0, bounce = 0.8, colour='red'):
         self.position = Vector(x, y)
         self.v = Vector(0,0)
         self.a = Vector(0,0)
@@ -65,14 +71,15 @@ class Particle:
         self.mass = mass
         self.inv_mass = 1 / mass if mass > 0 else 0.0
         self.bounce = bounce
-
+        self.colour = colour
     def force(self, force:Vector):
         self.a += force * self.inv_mass
 
     def update(self, dt = float, floor = float):
+
         self.v += self.a * dt
         self.position += self.v * dt
-        self.a = Vector(0,0)
+        self.a = Vector(0, 0)
 
         if self.position.x - self.radius <= 0:
             self.position.x = self.radius
@@ -87,14 +94,58 @@ class Particle:
             self.position.y = floor__height - self.radius
             self.v.y = -self.v.y * self.bounce
 
+    def draw(self, surface):
+        pygame.draw.circle(
+            surface,
+            self.colour,
+            (int(self.position.x), int(self.position.y)),
+            int(self.radius)
+        )
+
+def collision(a:Particle, b:Particle):
+    delta  =  b.position - a.position
+    s = delta.magnitude()
+    min_s = a.radius + b.radius
+
+    if s >= min_s:
+        return
+    dir = delta.normalize()
+    pen  = min_s - s
+
+    W = a.inv_mass + b.inv_mass
+    if W == 0:
+        return
+    corr = dir * (pen/W)
+    a.position -= corr * a.inv_mass
+    b.position += corr * b.inv_mass
+
+    r_v = a.v - b.v
+    v_d = r_v.dot(dir)
+
+    if v_d > 0:
+        return
+
+    e = a.bounce * b.bounce
+    e2 = min(a.bounce, b.bounce)
+    j = -(1+e) * v_d
+    j /= W
+    J = dir * j
+    a.v -= J * a.inv_mass
+    b.v += J * b.inv_mass
+
+    
 mousePositionX, mousePositionY = pygame.mouse.get_pos()
 
 g = Vector(0, 981.0)
+circles = []
+
 floor__height = 1030
-particle = Particle(600, 50, 10,1, 0.8)
-a_force = Vector(-1000, 0)
-d_force = Vector(1000, 0)
-w_force = Vector(0, -670)
+
+for _ in range(10):
+    r = random.randint(10,30)
+    m = r * 0.5
+    colour = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+    circles.append(Particle(random.randint(100, 1820), random.randint(100, 300), radius=r, mass = m, bounce = 0.8 , colour=colour))
 
 play_pause = Button(10, 10, 25, 25, 'red')
 
@@ -122,18 +173,16 @@ while run:
             physics_on = False
 
     if physics_on == True:
-        particle.force(g)
-        particle.update(dt, floor__height)
+        for c in circles:
+            c.force(g * c.mass)
+            c.update(dt)
+        for i in range(len(circles)):
+            for j in range(i + 1, len(circles)):
+                collision(circles[i], circles[j])
 
-    if keys[pygame.K_a]:
-        particle.force(a_force)
-    elif keys[pygame.K_d]:
-        particle.force(d_force)
-    elif keys[pygame.K_w]:
-        particle.force(w_force)
+    for c in circles:
+        c.draw(screen)
 
-
-    pygame.draw.circle(screen, 'red', (int(particle.position.x), int(particle.position.y)), particle.radius)
     pygame.draw.line(screen, 'white', (0, floor__height), (1920, floor__height), width=1)
 
     pygame.display.flip()
