@@ -130,21 +130,20 @@ def collision(a:Particle, b:Particle):
     j = 0
     e = a.bounce * b.bounce
     e2 = min(a.bounce, b.bounce)
-    eff_e = e2 if abs(v_d) > 1.0 else 0.0
+
+    # you can swap e and e2 for different "bounciness" calculations
+
+    eff_e = e if abs(v_d) > 1.0 else 0.0
     j = -(1+eff_e) * v_d
     j /= W
     J = dir * j
     a.v -= J * a.inv_mass
     b.v += J * b.inv_mass
 
-    a_pen = 0.0
-    pen_corr = max(0, pen - a_pen)
-    perc = 0.3
-
-    if pen_corr > 0:
-            corr = dir * (pen/W) * perc
-            a.position -= corr * a.inv_mass
-            b.position += corr * b.inv_mass
+    
+    corr = dir * (pen/W) 
+    a.position -= corr * a.inv_mass
+    b.position += corr * b.inv_mass
     
 mousePositionX, mousePositionY = pygame.mouse.get_pos()
 
@@ -152,14 +151,7 @@ g = Vector(0, 981.0)
 circles = []
 all_bounce = 0.8
 print(all_bounce)
-
 floor__height = 1030
-
-#for _ in range(10):
-    #r = random.randint(10,30)
-    #m = r * 0.5
-    #colour = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
-   # circles.append(Particle(random.randint(100, 1820), random.randint(100, 300), radius=r, mass = m, bounce = all_bounce , colour=colour))
 
 play_pause = Button(10, 10, 25, 25, 'red')
 
@@ -193,10 +185,10 @@ while run:
                     circles.append(Particle(mx, my, r, 3000, colour = colour))
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
                     mx, my = pygame.mouse.get_pos()
-                    r = 10
+                    r = 35
                     colour = 'red'
                     for i in range(10):
-                        circles.append(Particle(mx, my, r, 5, colour = colour))
+                        circles.append(Particle(mx, my, r, 5 , colour = colour))
 
 
     keys = pygame.key.get_pressed()
